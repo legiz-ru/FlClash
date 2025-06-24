@@ -154,7 +154,7 @@ Map<String, dynamic> _$$VpnPropsImplToJson(_$VpnPropsImpl instance) =>
 
 _$NetworkPropsImpl _$$NetworkPropsImplFromJson(Map<String, dynamic> json) =>
     _$NetworkPropsImpl(
-      systemProxy: json['systemProxy'] as bool? ?? true,
+      systemProxy: json['systemProxy'] as bool? ?? false,
       bypassDomain: (json['bypassDomain'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??

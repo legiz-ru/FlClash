@@ -1449,7 +1449,7 @@ class __$$NetworkPropsImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$NetworkPropsImpl implements _NetworkProps {
   const _$NetworkPropsImpl(
-      {this.systemProxy = true,
+      {this.systemProxy = false,
       final List<String> bypassDomain = defaultBypassDomain,
       this.routeMode = RouteMode.config,
       this.autoSetSystemDns = true})

@@ -178,7 +178,7 @@ class SnifferConfig with _$SnifferConfig {
 @freezed
 class Tun with _$Tun {
   const factory Tun({
-    @Default(false) bool enable,
+    @Default(true) bool enable,
     @Default(appName) String device,
     @JsonKey(name: "auto-route") @Default(false) bool autoRoute,
     @Default(TunStack.mixed) TunStack stack,
@@ -484,7 +484,7 @@ class ClashConfig with _$ClashConfig {
     @Default(false) @JsonKey(name: "allow-lan") bool allowLan,
     @Default(LogLevel.error) @JsonKey(name: "log-level") LogLevel logLevel,
     @Default(false) bool ipv6,
-    @Default(FindProcessMode.off)
+    @Default(FindProcessMode.always)
     @JsonKey(
       name: "find-process-mode",
       unknownEnumValue: FindProcessMode.always,
