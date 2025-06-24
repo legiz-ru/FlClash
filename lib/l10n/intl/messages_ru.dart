@@ -323,7 +323,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "getOriginRules": MessageLookupByLibrary.simpleMessage(
       "Получить оригинальные правила",
     ),
-    "global": MessageLookupByLibrary.simpleMessage("Всё в ВПН"),
+    "global": MessageLookupByLibrary.simpleMessage("Всё в туннель"),
     "go": MessageLookupByLibrary.simpleMessage("Перейти"),
     "goDownload": MessageLookupByLibrary.simpleMessage("Перейти к загрузке"),
     "hasCacheChange": MessageLookupByLibrary.simpleMessage(
@@ -481,7 +481,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Другие участники",
     ),
     "outboundMode": MessageLookupByLibrary.simpleMessage(
-      "Режим исходящего трафика",
+      "Режим работы",
     ),
     "override": MessageLookupByLibrary.simpleMessage("Переопределить"),
     "overrideDesc": MessageLookupByLibrary.simpleMessage(
@@ -634,7 +634,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Использовать конфигурацию",
     ),
     "ru": MessageLookupByLibrary.simpleMessage("Русский"),
-    "rule": MessageLookupByLibrary.simpleMessage("По правилам"),
+    "rule": MessageLookupByLibrary.simpleMessage("Частично в туннель"),
     "ruleName": MessageLookupByLibrary.simpleMessage("Название правила"),
     "ruleProviders": MessageLookupByLibrary.simpleMessage("Провайдеры правил"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("Цель правила"),

@@ -117,8 +117,8 @@ const _$AccessSortTypeEnumMap = {
 
 _$WindowPropsImpl _$$WindowPropsImplFromJson(Map<String, dynamic> json) =>
     _$WindowPropsImpl(
-      width: (json['width'] as num?)?.toDouble() ?? 750,
-      height: (json['height'] as num?)?.toDouble() ?? 600,
+      width: (json['width'] as num?)?.toDouble() ?? 950,
+      height: (json['height'] as num?)?.toDouble() ?? 750,
       top: (json['top'] as num?)?.toDouble(),
       left: (json['left'] as num?)?.toDouble(),
     );
