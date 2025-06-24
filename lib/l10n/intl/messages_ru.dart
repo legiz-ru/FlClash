@@ -228,7 +228,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
       "Режим разработчика активирован.",
     ),
-    "direct": MessageLookupByLibrary.simpleMessage("Прямой"),
+    "direct": MessageLookupByLibrary.simpleMessage("Всё напрямую"),
     "disclaimer": MessageLookupByLibrary.simpleMessage(
       "Отказ от ответственности",
     ),
@@ -323,7 +323,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "getOriginRules": MessageLookupByLibrary.simpleMessage(
       "Получить оригинальные правила",
     ),
-    "global": MessageLookupByLibrary.simpleMessage("Глобальный"),
+    "global": MessageLookupByLibrary.simpleMessage("Всё в ВПН"),
     "go": MessageLookupByLibrary.simpleMessage("Перейти"),
     "goDownload": MessageLookupByLibrary.simpleMessage("Перейти к загрузке"),
     "hasCacheChange": MessageLookupByLibrary.simpleMessage(
@@ -634,7 +634,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Использовать конфигурацию",
     ),
     "ru": MessageLookupByLibrary.simpleMessage("Русский"),
-    "rule": MessageLookupByLibrary.simpleMessage("Правило"),
+    "rule": MessageLookupByLibrary.simpleMessage("По правилам"),
     "ruleName": MessageLookupByLibrary.simpleMessage("Название правила"),
     "ruleProviders": MessageLookupByLibrary.simpleMessage("Провайдеры правил"),
     "ruleTarget": MessageLookupByLibrary.simpleMessage("Цель правила"),
