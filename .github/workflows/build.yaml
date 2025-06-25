@@ -13,6 +13,8 @@ jobs:
     strategy:
       matrix:
         include:
+          - platform: android
+            os: ubuntu-latest
           - platform: windows
             os: windows-latest
             arch: amd64
