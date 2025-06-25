@@ -1,3 +1,16 @@
+## v0.8.86_special_2
+
+- revert add android to build release
+- add android to build release
+- update ru locale
+
+- Изменение текста кнопок и описаний
+- Merge pull request #1 from xK1t/xK1t-patch-1
+
+- Update messages_ru.dart
+- Update messages_ru.dart
+- Update changelog
+
 ## v0.8.86_special
 
 - localization installer
