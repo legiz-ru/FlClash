@@ -13,6 +13,8 @@ jobs:
     strategy:
       matrix:
         include:
+          - platform: android
+            os: ubuntu-latest
           - platform: windows
             os: windows-latest
             arch: amd64
@@ -40,7 +42,6 @@ jobs:
           .\rustup-init.exe -y --default-toolchain stable
           $cargoPath = "$env:USERPROFILE\.cargo\bin"
           Add-Content $env:GITHUB_PATH $cargoPath
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -53,14 +54,12 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/local.properties
           echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/local.properties
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/local.properties
-
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.24.0'
           cache-dependency-path: |
             core/go.sum
-
       - name: Setup Flutter Master
         if: startsWith(matrix.os, 'windows-11-arm') || startsWith(matrix.os, 'ubuntu-24.04-arm')
         uses: subosito/flutter-action@v2
@@ -129,7 +128,6 @@ jobs:
           done
           cat CHANGELOG.md >> NEW_CHANGELOG.md
           cat NEW_CHANGELOG.md > CHANGELOG.md
-
       - name: Commit
         if: ${{ env.IS_STABLE == 'true' }}
         run: |
@@ -147,7 +145,6 @@ jobs:
               exit 1
             fi
           fi
-
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -194,12 +191,10 @@ jobs:
             fi
             currentTag=$tag
           done
-
       - name: Patch release.md
         run: |
           version=$(echo "${{ github.ref_name }}" | sed 's/^v//')
           sed "s|VERSION|$version|g" ./.github/release_template.md >> release.md
-
       - name: Generate sha256
         if: env.IS_STABLE == 'true'
         run: |
@@ -207,7 +202,6 @@ jobs:
           for file in $(find . -type f -not -name "*.sha256"); do
             sha256sum "$file" > "${file}.sha256"
           done  
-
       - name: Release
         if: ${{ env.IS_STABLE == 'true' }}
         uses: softprops/action-gh-release@v2
