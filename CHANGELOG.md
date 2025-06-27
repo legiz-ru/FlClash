@@ -1,3 +1,8 @@
+## v0.8.86_special_3
+
+- try android build again
+- Update changelog
+
 ## v0.8.86_special_2
 
 - revert add android to build release
