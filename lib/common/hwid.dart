@@ -124,7 +124,7 @@ class HwidManager {
         return deviceId;
       }
     } catch (e) {
-      // Fall back to fingerprint-based generation
+      // Fall back to fingerprint-based generation if package fails
     }
 
     // Generate HWID based on device fingerprint (similar to machine-uid logic)
