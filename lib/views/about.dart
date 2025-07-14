@@ -20,35 +20,8 @@ class Contributor {
   });
 }
 
-class AboutView extends StatefulWidget {
+class AboutView extends StatelessWidget {
   const AboutView({super.key});
-
-  @override
-  State<AboutView> createState() => _AboutViewState();
-}
-
-class _AboutViewState extends State<AboutView> {
-  String? _deviceInfo;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadDeviceInfo();
-  }
-
-  Future<void> _loadDeviceInfo() async {
-    try {
-      final systemInfo = system;
-      final version = await systemInfo.version;
-      setState(() {
-        _deviceInfo = 'Device Version: $version';
-      });
-    } catch (e) {
-      setState(() {
-        _deviceInfo = 'Device info unavailable';
-      });
-    }
-  }
 
   _checkUpdate(BuildContext context) async {
     final commonScaffoldState = context.commonScaffoldState;
@@ -171,12 +144,7 @@ class _AboutViewState extends State<AboutView> {
                         Text(
                           globalState.packageInfo.version,
                           style: Theme.of(context).textTheme.labelLarge,
-                        ),
-                        if (_deviceInfo != null)
-                          Text(
-                            _deviceInfo!,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
+                        )
                       ],
                     )
                   ],
