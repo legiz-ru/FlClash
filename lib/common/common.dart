@@ -9,6 +9,7 @@ export 'fixed.dart';
 export 'function.dart';
 export 'future.dart';
 export 'http.dart';
+export 'hwid.dart';
 export 'icons.dart';
 export 'iterable.dart';
 export 'keyboard.dart';
