@@ -25,7 +25,7 @@ class System {
   Future<int> get version async {
     final deviceInfo = await DeviceInfoPlugin().deviceInfo;
     return switch (Platform.operatingSystem) {
-      "macos" => (deviceInfo as MacOsDeviceInfo).majorVersion,
+      "macos" => (deviceInfo as MacOSDeviceInfo).majorVersion,
       "android" => (deviceInfo as AndroidDeviceInfo).version.sdkInt,
       "windows" => (deviceInfo as WindowsDeviceInfo).majorVersion,
       String() => 0
