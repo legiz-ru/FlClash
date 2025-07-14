@@ -35,43 +35,47 @@ class Request {
     });
   }
 
-  Future<Response> getFileResponseForUrl(String url) async {
+  Future<Response> getFileResponseForUrl(String url, {bool isSubscription = true}) async {
     // Add HWID headers for subscription requests
     final headers = <String, String>{};
-    try {
-      final deviceInfo = await hwidService.getDeviceInfo();
-      headers.addAll(deviceInfo.headers);
-    } catch (e) {
-      // If HWID generation fails, continue without HWID headers
-      commonPrint.log('Failed to get device info for HWID headers: $e');
+    if (isSubscription) {
+      try {
+        final deviceInfo = await hwidService.getDeviceInfo();
+        headers.addAll(deviceInfo.headers);
+      } catch (e) {
+        // If HWID generation fails, continue without HWID headers
+        commonPrint.log('Failed to get device info for HWID headers: $e');
+      }
     }
 
     final response = await _clashDio.get(
       url,
       options: Options(
         responseType: ResponseType.bytes,
-        headers: headers,
+        headers: headers.isNotEmpty ? headers : null,
       ),
     );
     return response;
   }
 
-  Future<Response> getTextResponseForUrl(String url) async {
+  Future<Response> getTextResponseForUrl(String url, {bool isSubscription = true}) async {
     // Add HWID headers for subscription requests
     final headers = <String, String>{};
-    try {
-      final deviceInfo = await hwidService.getDeviceInfo();
-      headers.addAll(deviceInfo.headers);
-    } catch (e) {
-      // If HWID generation fails, continue without HWID headers
-      commonPrint.log('Failed to get device info for HWID headers: $e');
+    if (isSubscription) {
+      try {
+        final deviceInfo = await hwidService.getDeviceInfo();
+        headers.addAll(deviceInfo.headers);
+      } catch (e) {
+        // If HWID generation fails, continue without HWID headers
+        commonPrint.log('Failed to get device info for HWID headers: $e');
+      }
     }
 
     final response = await _clashDio.get(
       url,
       options: Options(
         responseType: ResponseType.plain,
-        headers: headers,
+        headers: headers.isNotEmpty ? headers : null,
       ),
     );
     return response;
