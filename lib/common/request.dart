@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/hwid.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter/cupertino.dart';
@@ -35,20 +36,30 @@ class Request {
   }
 
   Future<Response> getFileResponseForUrl(String url) async {
+    // Get device info for HWID headers
+    final deviceInfo = await hwidManager.getDeviceInfo();
+    final headers = deviceInfo.toHeaders();
+    
     final response = await _clashDio.get(
       url,
       options: Options(
         responseType: ResponseType.bytes,
+        headers: headers,
       ),
     );
     return response;
   }
 
   Future<Response> getTextResponseForUrl(String url) async {
+    // Get device info for HWID headers
+    final deviceInfo = await hwidManager.getDeviceInfo();
+    final headers = deviceInfo.toHeaders();
+    
     final response = await _clashDio.get(
       url,
       options: Options(
         responseType: ResponseType.plain,
+        headers: headers,
       ),
     );
     return response;

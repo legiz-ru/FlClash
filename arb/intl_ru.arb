@@ -407,5 +407,10 @@
   "import": "Импорт",
   "importFile": "Импорт из файла",
   "importUrl": "Импорт по URL",
-  "autoSetSystemDns": "Автоматическая настройка системного DNS"
+  "autoSetSystemDns": "Автоматическая настройка системного DNS",
+  "deviceInfo": "Информация об устройстве",
+  "hwid": "ID оборудования",
+  "deviceOS": "ОС устройства",
+  "osVersion": "Версия ОС",
+  "deviceModel": "Модель устройства"
 }

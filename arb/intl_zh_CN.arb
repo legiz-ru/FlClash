@@ -407,5 +407,10 @@
   "import": "导入",
   "importFile": "通过文件导入",
   "importUrl": "通过URL导入",
-  "autoSetSystemDns": "自动设置系统DNS"
+  "autoSetSystemDns": "自动设置系统DNS",
+  "deviceInfo": "设备信息",
+  "hwid": "硬件ID",
+  "deviceOS": "设备系统",
+  "osVersion": "系统版本",
+  "deviceModel": "设备型号"
 }

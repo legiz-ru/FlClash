@@ -5,6 +5,7 @@ import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 @immutable
@@ -36,6 +37,66 @@ class AboutView extends StatelessWidget {
     );
   }
 
+  List<Widget> _buildDeviceInfoSection() {
+    return generateSection(
+      separated: false,
+      title: appLocalizations.deviceInfo,
+      items: [
+        FutureBuilder<DeviceInfo>(
+          future: hwidManager.getDeviceInfo(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const ListItem(
+                title: Text('Loading...'),
+              );
+            }
+            
+            if (snapshot.hasError) {
+              return ListItem(
+                title: Text('Error: ${snapshot.error}'),
+              );
+            }
+            
+            final deviceInfo = snapshot.data!;
+            return Column(
+              children: [
+                ListItem(
+                  title: Text(appLocalizations.hwid),
+                  subtitle: SelectableText(deviceInfo.hwid),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.copy),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: deviceInfo.hwid));
+                      context.showNotifier(appLocalizations.copySuccess);
+                    },
+                  ),
+                ),
+                if (deviceInfo.deviceOS != null)
+                  ListItem(
+                    title: Text(appLocalizations.deviceOS),
+                    subtitle: SelectableText(deviceInfo.deviceOS!),
+                  ),
+                if (deviceInfo.osVersion != null)
+                  ListItem(
+                    title: Text(appLocalizations.osVersion),
+                    subtitle: SelectableText(deviceInfo.osVersion!),
+                  ),
+                if (deviceInfo.deviceModel != null)
+                  ListItem(
+                    title: Text(appLocalizations.deviceModel),
+                    subtitle: SelectableText(deviceInfo.deviceModel!),
+                  ),
+                ListItem(
+                  title: const Text('User-Agent'),
+                  subtitle: SelectableText(deviceInfo.userAgent),
+                ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
   List<Widget> _buildMoreSection(BuildContext context) {
     return generateSection(
       separated: false,
@@ -170,6 +231,7 @@ class AboutView extends StatelessWidget {
       const SizedBox(
         height: 12,
       ),
+      ..._buildDeviceInfoSection(),
       ..._buildContributorsSection(),
       ..._buildMoreSection(context),
     ];
