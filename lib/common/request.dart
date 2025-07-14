@@ -32,6 +32,33 @@ class Request {
       };
       return client;
     });
+    
+    // Add device information interceptor
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        _addDeviceHeaders(options);
+        handler.next(options);
+      },
+    ));
+    
+    _clashDio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) {
+        _addDeviceHeaders(options);
+        handler.next(options);
+      },
+    ));
+  }
+
+  void _addDeviceHeaders(RequestOptions options) {
+    try {
+      options.headers['x-hwid'] = hwid.hwid;
+      options.headers['x-device-os'] = hwid.deviceOs;
+      options.headers['x-ver-os'] = hwid.osVersion;
+      options.headers['x-device-model'] = hwid.deviceModel;
+      options.headers['user-agent'] = hwid.userAgent;
+    } catch (e) {
+      // If hwid is not initialized yet, skip adding headers
+    }
   }
 
   Future<Response> getFileResponseForUrl(String url) async {

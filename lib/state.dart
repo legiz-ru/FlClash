@@ -98,6 +98,12 @@ class GlobalState {
       utils.getLocaleForString(config.appSetting.locale) ??
           WidgetsBinding.instance.platformDispatcher.locale,
     );
+    // Initialize device information
+    try {
+      await hwid.initialize();
+    } catch (e) {
+      // Handle error silently - device info is optional
+    }
   }
 
   String get ua => config.patchClashConfig.globalUa ?? packageInfo.ua;

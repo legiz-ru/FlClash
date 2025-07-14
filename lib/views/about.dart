@@ -20,8 +20,34 @@ class Contributor {
   });
 }
 
-class AboutView extends StatelessWidget {
+class AboutView extends StatefulWidget {
   const AboutView({super.key});
+
+  @override
+  State<AboutView> createState() => _AboutViewState();
+}
+
+class _AboutViewState extends State<AboutView> {
+  bool _isDeviceInfoLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeDeviceInfo();
+  }
+
+  Future<void> _initializeDeviceInfo() async {
+    try {
+      await hwid.initialize();
+      if (mounted) {
+        setState(() {
+          _isDeviceInfoLoaded = true;
+        });
+      }
+    } catch (e) {
+      // Handle error silently - device info is optional
+    }
+  }
 
   _checkUpdate(BuildContext context) async {
     final commonScaffoldState = context.commonScaffoldState;
@@ -33,6 +59,35 @@ class AboutView extends StatelessWidget {
     globalState.appController.checkUpdateResultHandle(
       data: data,
       handleError: true,
+    );
+  }
+
+  List<Widget> _buildDeviceInfoSection() {
+    if (!_isDeviceInfoLoaded) {
+      return [];
+    }
+    
+    return generateSection(
+      separated: false,
+      title: appLocalizations.deviceInfo,
+      items: [
+        ListItem(
+          title: Text(appLocalizations.deviceId),
+          subtitle: Text(hwid.hwid),
+        ),
+        ListItem(
+          title: Text(appLocalizations.operatingSystem),
+          subtitle: Text(hwid.deviceOs),
+        ),
+        ListItem(
+          title: Text(appLocalizations.osVersion),
+          subtitle: Text(hwid.osVersion),
+        ),
+        ListItem(
+          title: Text(appLocalizations.deviceModel),
+          subtitle: Text(hwid.deviceModel),
+        ),
+      ],
     );
   }
 
@@ -170,6 +225,7 @@ class AboutView extends StatelessWidget {
       const SizedBox(
         height: 12,
       ),
+      ..._buildDeviceInfoSection(),
       ..._buildContributorsSection(),
       ..._buildMoreSection(context),
     ];

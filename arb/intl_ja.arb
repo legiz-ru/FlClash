@@ -407,5 +407,10 @@
   "import": "インポート",
   "importFile": "ファイルからインポート",
   "importUrl": "URLからインポート",
-  "autoSetSystemDns": "オートセットシステムDNS"
+  "autoSetSystemDns": "オートセットシステムDNS",
+  "deviceInfo": "デバイス情報",
+  "deviceId": "デバイスID",
+  "operatingSystem": "オペレーティングシステム",
+  "osVersion": "OSバージョン",
+  "deviceModel": "デバイスモデル"
 }

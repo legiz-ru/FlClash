@@ -406,5 +406,10 @@
   "import": "Import",
   "importFile": "Import from file",
   "importUrl": "Import from URL",
-  "autoSetSystemDns": "Auto set system DNS"
+  "autoSetSystemDns": "Auto set system DNS",
+  "deviceInfo": "Device Information",
+  "deviceId": "Device ID",
+  "operatingSystem": "Operating System",
+  "osVersion": "OS Version",
+  "deviceModel": "Device Model"
 }
