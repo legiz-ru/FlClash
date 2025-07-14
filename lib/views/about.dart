@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/providers/config.dart';
+import 'package:fl_clash/services/hwid_service.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/widgets/list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 @immutable
@@ -113,6 +115,60 @@ class AboutView extends StatelessWidget {
     );
   }
 
+  List<Widget> _buildDeviceInfoSection() {
+    return generateSection(
+      separated: false,
+      title: "Device Information",
+      items: [
+        FutureBuilder<DeviceInfo>(
+          future: hwidService.getDeviceInfo(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final deviceInfo = snapshot.data!;
+              return Column(
+                children: [
+                  ListItem(
+                    title: const Text("Hardware ID"),
+                    subtitle: Text(deviceInfo.hwid),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.copy),
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: deviceInfo.hwid));
+                        context.showNotifier("Hardware ID copied to clipboard");
+                      },
+                    ),
+                  ),
+                  ListItem(
+                    title: const Text("Device OS"),
+                    subtitle: Text(deviceInfo.deviceOS),
+                  ),
+                  ListItem(
+                    title: const Text("OS Version"),
+                    subtitle: Text(deviceInfo.osVersion),
+                  ),
+                  ListItem(
+                    title: const Text("Device Model"),
+                    subtitle: Text(deviceInfo.deviceModel),
+                  ),
+                ],
+              );
+            } else if (snapshot.hasError) {
+              return ListItem(
+                title: const Text("Device Information"),
+                subtitle: Text("Error loading device info: ${snapshot.error}"),
+              );
+            } else {
+              return const ListItem(
+                title: Text("Device Information"),
+                subtitle: Text("Loading..."),
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final items = [
@@ -170,6 +226,7 @@ class AboutView extends StatelessWidget {
       const SizedBox(
         height: 12,
       ),
+      ..._buildDeviceInfoSection(),
       ..._buildContributorsSection(),
       ..._buildMoreSection(context),
     ];

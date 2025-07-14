@@ -8,6 +8,7 @@ import 'package:dio/io.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/services/hwid_service.dart';
 import 'package:flutter/cupertino.dart';
 
 class Request {
@@ -35,20 +36,42 @@ class Request {
   }
 
   Future<Response> getFileResponseForUrl(String url) async {
+    // Add HWID headers for subscription requests
+    final headers = <String, String>{};
+    try {
+      final deviceInfo = await hwidService.getDeviceInfo();
+      headers.addAll(deviceInfo.headers);
+    } catch (e) {
+      // If HWID generation fails, continue without HWID headers
+      commonPrint.log('Failed to get device info for HWID headers: $e');
+    }
+
     final response = await _clashDio.get(
       url,
       options: Options(
         responseType: ResponseType.bytes,
+        headers: headers,
       ),
     );
     return response;
   }
 
   Future<Response> getTextResponseForUrl(String url) async {
+    // Add HWID headers for subscription requests
+    final headers = <String, String>{};
+    try {
+      final deviceInfo = await hwidService.getDeviceInfo();
+      headers.addAll(deviceInfo.headers);
+    } catch (e) {
+      // If HWID generation fails, continue without HWID headers
+      commonPrint.log('Failed to get device info for HWID headers: $e');
+    }
+
     final response = await _clashDio.get(
       url,
       options: Options(
         responseType: ResponseType.plain,
+        headers: headers,
       ),
     );
     return response;
