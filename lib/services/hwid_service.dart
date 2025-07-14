@@ -71,20 +71,28 @@ class HwidService {
       identifier = '${androidInfo.id}-${androidInfo.model}-${androidInfo.manufacturer}';
     } else if (Platform.isIOS) {
       final iosInfo = await _deviceInfoPlugin.iosInfo;
-      // Use identifierForVendor as unique identifier
-      identifier = '${iosInfo.identifierForVendor}-${iosInfo.model}-${iosInfo.name}';
+      // Use identifierForVendor as unique identifier, fallback to other identifiers if null
+      final vendorId = iosInfo.identifierForVendor ?? iosInfo.systemName;
+      identifier = '$vendorId-${iosInfo.model}-${iosInfo.name}';
     } else if (Platform.isWindows) {
       final windowsInfo = await _deviceInfoPlugin.windowsInfo;
       // Use computer name and product ID
-      identifier = '${windowsInfo.computerName}-${windowsInfo.productId}-${windowsInfo.productName}';
+      final computerName = windowsInfo.computerName ?? 'UnknownComputer';
+      final productId = windowsInfo.productId ?? 'UnknownProduct';
+      identifier = '$computerName-$productId-${windowsInfo.productName}';
     } else if (Platform.isMacOS) {
       final macOSInfo = await _deviceInfoPlugin.macOSInfo;
       // Use system GUID and model
-      identifier = '${macOSInfo.systemGUID}-${macOSInfo.model}-${macOSInfo.computerName}';
+      final systemGUID = macOSInfo.systemGUID ?? 'UnknownGUID';
+      final computerName = macOSInfo.computerName ?? 'UnknownMac';
+      identifier = '$systemGUID-${macOSInfo.model}-$computerName';
     } else if (Platform.isLinux) {
       final linuxInfo = await _deviceInfoPlugin.linuxInfo;
       // Use machine ID and model
-      identifier = '${linuxInfo.machineId}-${linuxInfo.prettyName}-${linuxInfo.id}';
+      final machineId = linuxInfo.machineId ?? 'UnknownMachine';
+      final prettyName = linuxInfo.prettyName ?? 'Linux';
+      final id = linuxInfo.id ?? 'linux';
+      identifier = '$machineId-$prettyName-$id';
     } else {
       // Fallback for other platforms
       identifier = Platform.operatingSystem + Platform.operatingSystemVersion;
