@@ -2,8 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/state.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class DeviceInfo {
   final String hwid;
@@ -50,7 +49,7 @@ class HwidService {
     final deviceOS = _getDeviceOS();
     final osVersion = await _getOSVersion();
     final deviceModel = await _getDeviceModel();
-    final userAgent = _generateUserAgent(deviceOS, osVersion, deviceModel);
+    final userAgent = await _generateUserAgent(deviceOS, osVersion, deviceModel);
 
     _cachedDeviceInfo = DeviceInfo(
       hwid: hwid,
@@ -69,32 +68,36 @@ class HwidService {
     try {
       if (Platform.isAndroid) {
         final androidInfo = await _deviceInfoPlugin.androidInfo;
-        // Use basic device identification that's guaranteed to exist
-        identifier = '${androidInfo.model}-${androidInfo.manufacturer}-${androidInfo.brand}';
+        // Use basic Android identification
+        identifier = 'android-${androidInfo.model}';
       } else if (Platform.isIOS) {
         final iosInfo = await _deviceInfoPlugin.iosInfo;
-        // Use identifierForVendor as unique identifier
-        final vendorId = iosInfo.identifierForVendor ?? 'unknown-vendor';
-        identifier = '$vendorId-${iosInfo.model}';
+        // Use basic iOS identification
+        identifier = 'ios-${iosInfo.model}';
       } else if (Platform.isWindows) {
         final windowsInfo = await _deviceInfoPlugin.windowsInfo;
         // Use basic Windows identification
-        identifier = '${windowsInfo.majorVersion}-${windowsInfo.minorVersion}-${windowsInfo.buildNumber}';
+        identifier = 'windows-${windowsInfo.buildNumber}';
       } else if (Platform.isMacOS) {
         final macOSInfo = await _deviceInfoPlugin.macOSInfo;
         // Use basic macOS identification
-        identifier = '${macOSInfo.hostName}-${macOSInfo.majorVersion}-${macOSInfo.minorVersion}';
+        identifier = 'macos-${macOSInfo.majorVersion}';
       } else if (Platform.isLinux) {
         final linuxInfo = await _deviceInfoPlugin.linuxInfo;
         // Use basic Linux identification
-        identifier = '${linuxInfo.name}-${linuxInfo.version ?? 'unknown'}';
+        identifier = 'linux-${linuxInfo.name}';
       } else {
         // Fallback for other platforms
-        identifier = Platform.operatingSystem + Platform.operatingSystemVersion;
+        identifier = '${Platform.operatingSystem}-${Platform.operatingSystemVersion}';
       }
     } catch (e) {
-      // Fallback if device info fails
+      // Comprehensive fallback if device info fails
       identifier = '${Platform.operatingSystem}-${Platform.operatingSystemVersion}-${DateTime.now().millisecondsSinceEpoch}';
+    }
+
+    // Ensure we have some identifier
+    if (identifier.isEmpty) {
+      identifier = 'unknown-device-${DateTime.now().millisecondsSinceEpoch}';
     }
 
     // Hash the identifier for privacy and consistency
@@ -122,16 +125,16 @@ class HwidService {
         return iosInfo.systemVersion;
       } else if (Platform.isWindows) {
         final windowsInfo = await _deviceInfoPlugin.windowsInfo;
-        return '${windowsInfo.majorVersion}.${windowsInfo.minorVersion}.${windowsInfo.buildNumber}';
+        return '${windowsInfo.majorVersion}.${windowsInfo.minorVersion}';
       } else if (Platform.isMacOS) {
         final macOSInfo = await _deviceInfoPlugin.macOSInfo;
-        return '${macOSInfo.majorVersion}.${macOSInfo.minorVersion}.${macOSInfo.patchVersion}';
+        return '${macOSInfo.majorVersion}.${macOSInfo.minorVersion}';
       } else if (Platform.isLinux) {
         final linuxInfo = await _deviceInfoPlugin.linuxInfo;
         return linuxInfo.version ?? Platform.operatingSystemVersion;
       }
     } catch (e) {
-      // Fallback if device info fails
+      // Fallback if device info fails - this is expected and not an error
     }
     return Platform.operatingSystemVersion;
   }
@@ -140,28 +143,25 @@ class HwidService {
     try {
       if (Platform.isAndroid) {
         final androidInfo = await _deviceInfoPlugin.androidInfo;
-        return '${androidInfo.manufacturer} ${androidInfo.model}';
+        return androidInfo.model;
       } else if (Platform.isIOS) {
         final iosInfo = await _deviceInfoPlugin.iosInfo;
-        return iosInfo.model ?? 'iOS Device';
+        return iosInfo.model;
       } else if (Platform.isWindows) {
-        final windowsInfo = await _deviceInfoPlugin.windowsInfo;
-        return 'Windows ${windowsInfo.majorVersion}.${windowsInfo.minorVersion}';
+        return 'Windows Device';
       } else if (Platform.isMacOS) {
-        final macOSInfo = await _deviceInfoPlugin.macOSInfo;
-        return macOSInfo.hostName ?? 'Mac Device';
+        return 'Mac Device';
       } else if (Platform.isLinux) {
-        final linuxInfo = await _deviceInfoPlugin.linuxInfo;
-        return linuxInfo.name ?? 'Linux Device';
+        return 'Linux Device';
       }
     } catch (e) {
-      // Fallback if device info fails
+      // Fallback if device info fails - this is expected and not an error
     }
-    return 'Unknown Device';
+    return '${Platform.operatingSystem} Device';
   }
 
-  String _generateUserAgent(String deviceOS, String osVersion, String deviceModel) {
-    final packageInfo = globalState.packageInfo;
+  Future<String> _generateUserAgent(String deviceOS, String osVersion, String deviceModel) async {
+    final packageInfo = await PackageInfo.fromPlatform();
     return 'FlClash/${packageInfo.version} ($deviceOS $osVersion; $deviceModel)';
   }
 

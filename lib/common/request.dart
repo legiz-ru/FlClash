@@ -44,7 +44,7 @@ class Request {
         headers.addAll(deviceInfo.headers);
       } catch (e) {
         // If HWID generation fails, continue without HWID headers
-        commonPrint.log('Failed to get device info for HWID headers: $e');
+        debugPrint('Failed to get device info for HWID headers: $e');
       }
     }
 
@@ -67,7 +67,7 @@ class Request {
         headers.addAll(deviceInfo.headers);
       } catch (e) {
         // If HWID generation fails, continue without HWID headers
-        commonPrint.log('Failed to get device info for HWID headers: $e');
+        debugPrint('Failed to get device info for HWID headers: $e');
       }
     }
 
