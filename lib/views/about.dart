@@ -150,12 +150,24 @@ class AboutView extends StatelessWidget {
                     title: const Text("Device Model"),
                     subtitle: Text(deviceInfo.deviceModel),
                   ),
+                  ListItem(
+                    title: const Text("User Agent"),
+                    subtitle: Text(deviceInfo.userAgent),
+                  ),
                 ],
               );
             } else if (snapshot.hasError) {
               return ListItem(
                 title: const Text("Device Information"),
                 subtitle: Text("Error loading device info: ${snapshot.error}"),
+                trailing: IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    // Clear cache and rebuild
+                    hwidService.clearCache();
+                    // Trigger rebuild by calling setState in parent if available
+                  },
+                ),
               );
             } else {
               return const ListItem(
