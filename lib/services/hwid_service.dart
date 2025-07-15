@@ -67,25 +67,29 @@ class HwidService {
 
     if (Platform.isAndroid) {
       final androidInfo = await _deviceInfoPlugin.androidInfo;
-      // Use Android ID and model as unique identifier
-      identifier = '${androidInfo.id}-${androidInfo.model}-${androidInfo.manufacturer}';
+      // Use device fingerprint components as unique identifier
+      final deviceId = androidInfo.fingerprint ?? androidInfo.id ?? 'unknown';
+      identifier = '$deviceId-${androidInfo.model}-${androidInfo.manufacturer}';
     } else if (Platform.isIOS) {
       final iosInfo = await _deviceInfoPlugin.iosInfo;
       // Use identifierForVendor as unique identifier, fallback to other identifiers if null
       final vendorId = iosInfo.identifierForVendor ?? iosInfo.systemName;
-      identifier = '$vendorId-${iosInfo.model}-${iosInfo.name}';
+      final deviceName = iosInfo.utsname.nodename ?? 'iOS-Device';
+      identifier = '$vendorId-${iosInfo.model}-$deviceName';
     } else if (Platform.isWindows) {
       final windowsInfo = await _deviceInfoPlugin.windowsInfo;
       // Use computer name and product ID
       final computerName = windowsInfo.computerName ?? 'UnknownComputer';
       final productId = windowsInfo.productId ?? 'UnknownProduct';
-      identifier = '$computerName-$productId-${windowsInfo.productName}';
+      final productName = windowsInfo.productName ?? 'Windows';
+      identifier = '$computerName-$productId-$productName';
     } else if (Platform.isMacOS) {
       final macOSInfo = await _deviceInfoPlugin.macOSInfo;
       // Use system GUID and model
       final systemGUID = macOSInfo.systemGUID ?? 'UnknownGUID';
       final computerName = macOSInfo.computerName ?? 'UnknownMac';
-      identifier = '$systemGUID-${macOSInfo.model}-$computerName';
+      final model = macOSInfo.model ?? 'Mac';
+      identifier = '$systemGUID-$model-$computerName';
     } else if (Platform.isLinux) {
       final linuxInfo = await _deviceInfoPlugin.linuxInfo;
       // Use machine ID and model
@@ -139,13 +143,13 @@ class HwidService {
       return '${androidInfo.manufacturer} ${androidInfo.model}';
     } else if (Platform.isIOS) {
       final iosInfo = await _deviceInfoPlugin.iosInfo;
-      return iosInfo.model;
+      return iosInfo.model ?? 'iOS Device';
     } else if (Platform.isWindows) {
       final windowsInfo = await _deviceInfoPlugin.windowsInfo;
-      return windowsInfo.productName;
+      return windowsInfo.productName ?? 'Windows Device';
     } else if (Platform.isMacOS) {
       final macOSInfo = await _deviceInfoPlugin.macOSInfo;
-      return macOSInfo.model;
+      return macOSInfo.model ?? 'Mac Device';
     } else if (Platform.isLinux) {
       final linuxInfo = await _deviceInfoPlugin.linuxInfo;
       return linuxInfo.prettyName ?? 'Linux Device';
