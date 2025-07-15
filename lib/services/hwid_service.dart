@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/state.dart';
 
 class DeviceInfo {
   final String hwid;
@@ -76,35 +77,23 @@ class HwidService {
         final vendorId = iosInfo.identifierForVendor ?? 'unknown-vendor';
         identifier = '$vendorId-${iosInfo.model}';
       } else if (Platform.isWindows) {
-        // Try machine-uid approach first, fallback to device_info_plus
-        try {
-          identifier = await _getWindowsMachineId();
-        } catch (e) {
-          final windowsInfo = await _deviceInfoPlugin.windowsInfo;
-          identifier = '${windowsInfo.majorVersion}-${windowsInfo.minorVersion}-${windowsInfo.buildNumber}';
-        }
+        final windowsInfo = await _deviceInfoPlugin.windowsInfo;
+        // Use basic Windows identification
+        identifier = '${windowsInfo.majorVersion}-${windowsInfo.minorVersion}-${windowsInfo.buildNumber}';
       } else if (Platform.isMacOS) {
-        // Try machine-uid approach first, fallback to device_info_plus
-        try {
-          identifier = await _getMacOSMachineId();
-        } catch (e) {
-          final macOSInfo = await _deviceInfoPlugin.macOSInfo;
-          identifier = '${macOSInfo.hostName}-${macOSInfo.majorVersion}-${macOSInfo.minorVersion}';
-        }
+        final macOSInfo = await _deviceInfoPlugin.macOSInfo;
+        // Use basic macOS identification
+        identifier = '${macOSInfo.hostName}-${macOSInfo.majorVersion}-${macOSInfo.minorVersion}';
       } else if (Platform.isLinux) {
-        // Try machine-uid approach first, fallback to device_info_plus
-        try {
-          identifier = await _getLinuxMachineId();
-        } catch (e) {
-          final linuxInfo = await _deviceInfoPlugin.linuxInfo;
-          identifier = '${linuxInfo.name}-${linuxInfo.version ?? 'unknown'}';
-        }
+        final linuxInfo = await _deviceInfoPlugin.linuxInfo;
+        // Use basic Linux identification
+        identifier = '${linuxInfo.name}-${linuxInfo.version ?? 'unknown'}';
       } else {
         // Fallback for other platforms
         identifier = Platform.operatingSystem + Platform.operatingSystemVersion;
       }
     } catch (e) {
-      // Fallback if all methods fail
+      // Fallback if device info fails
       identifier = '${Platform.operatingSystem}-${Platform.operatingSystemVersion}-${DateTime.now().millisecondsSinceEpoch}';
     }
 
@@ -112,132 +101,6 @@ class HwidService {
     final bytes = utf8.encode(identifier);
     final digest = sha256.convert(bytes);
     return digest.toString();
-  }
-
-  Future<String> _getWindowsMachineId() async {
-    try {
-      // Try to read MachineGuid from Windows registry
-      final result = await Process.run('reg', [
-        'query',
-        'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography',
-        '/v',
-        'MachineGuid'
-      ]);
-      
-      if (result.exitCode == 0) {
-        final output = result.stdout.toString();
-        final regex = RegExp(r'MachineGuid\s+REG_SZ\s+([A-F0-9-]+)', caseSensitive: false);
-        final match = regex.firstMatch(output);
-        if (match != null && match.group(1) != null) {
-          return match.group(1)!;
-        }
-      }
-    } catch (e) {
-      // Ignore errors and fall back
-    }
-
-    // Fallback: use hostname and other identifiers
-    try {
-      final hostname = await Process.run('hostname', []);
-      if (hostname.exitCode == 0) {
-        return hostname.stdout.toString().trim() + Platform.operatingSystemVersion;
-      }
-    } catch (e) {
-      // Ignore errors
-    }
-
-    // Final fallback
-    throw Exception('Unable to get Windows machine ID');
-  }
-
-  Future<String> _getMacOSMachineId() async {
-    try {
-      // Try to get hardware UUID using system_profiler
-      final result = await Process.run('system_profiler', ['SPHardwareDataType']);
-      
-      if (result.exitCode == 0) {
-        final output = result.stdout.toString();
-        final regex = RegExp(r'Hardware UUID:\s+([A-F0-9-]+)', caseSensitive: false);
-        final match = regex.firstMatch(output);
-        if (match != null && match.group(1) != null) {
-          return match.group(1)!;
-        }
-      }
-    } catch (e) {
-      // Ignore errors and fall back
-    }
-
-    // Fallback: use ioreg command
-    try {
-      final result = await Process.run('ioreg', ['-rd1', '-c', 'IOPlatformExpertDevice']);
-      
-      if (result.exitCode == 0) {
-        final output = result.stdout.toString();
-        final regex = RegExp(r'"IOPlatformUUID"\s*=\s*"([A-F0-9-]+)"', caseSensitive: false);
-        final match = regex.firstMatch(output);
-        if (match != null && match.group(1) != null) {
-          return match.group(1)!;
-        }
-      }
-    } catch (e) {
-      // Ignore errors and fall back
-    }
-
-    // Final fallback: use hostname
-    try {
-      final hostname = await Process.run('hostname', []);
-      if (hostname.exitCode == 0) {
-        return hostname.stdout.toString().trim() + Platform.operatingSystemVersion;
-      }
-    } catch (e) {
-      // Ignore errors
-    }
-
-    // Final fallback
-    throw Exception('Unable to get macOS machine ID');
-  }
-
-  Future<String> _getLinuxMachineId() async {
-    // Try to read from /etc/machine-id
-    try {
-      final file = File('/etc/machine-id');
-      if (await file.exists()) {
-        final content = await file.readAsString();
-        final machineId = content.trim();
-        if (machineId.isNotEmpty) {
-          return machineId;
-        }
-      }
-    } catch (e) {
-      // Ignore errors and try next method
-    }
-
-    // Try to read from /var/lib/dbus/machine-id
-    try {
-      final file = File('/var/lib/dbus/machine-id');
-      if (await file.exists()) {
-        final content = await file.readAsString();
-        final machineId = content.trim();
-        if (machineId.isNotEmpty) {
-          return machineId;
-        }
-      }
-    } catch (e) {
-      // Ignore errors and fall back
-    }
-
-    // Fallback: use hostname and other identifiers
-    try {
-      final hostname = await Process.run('hostname', []);
-      if (hostname.exitCode == 0) {
-        return hostname.stdout.toString().trim() + Platform.operatingSystemVersion;
-      }
-    } catch (e) {
-      // Ignore errors
-    }
-
-    // Final fallback
-    throw Exception('Unable to get Linux machine ID');
   }
 
   String _getDeviceOS() {
