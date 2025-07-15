@@ -68,15 +68,25 @@ class HwidService {
 
     try {
       if (Platform.isAndroid) {
-        identifier = await _getAndroidHwid();
+        final androidInfo = await _deviceInfoPlugin.androidInfo;
+        // Use only basic, guaranteed fields
+        identifier = 'android-${androidInfo.model}';
       } else if (Platform.isIOS) {
-        identifier = await _getIOSHwid();
+        final iosInfo = await _deviceInfoPlugin.iosInfo;
+        // Use basic iOS identification
+        identifier = 'ios-${iosInfo.model}';
       } else if (Platform.isWindows) {
-        identifier = await _getWindowsHwid();
+        final windowsInfo = await _deviceInfoPlugin.windowsInfo;
+        // Use basic Windows identification
+        identifier = 'windows-${windowsInfo.buildNumber}';
       } else if (Platform.isMacOS) {
-        identifier = await _getMacOSHwid();
+        final macOSInfo = await _deviceInfoPlugin.macOSInfo;
+        // Use basic macOS identification
+        identifier = 'macos-${macOSInfo.majorVersion}';
       } else if (Platform.isLinux) {
-        identifier = await _getLinuxHwid();
+        final linuxInfo = await _deviceInfoPlugin.linuxInfo;
+        // Use basic Linux identification
+        identifier = 'linux-${linuxInfo.name}';
       } else {
         // Fallback for other platforms
         identifier = '${Platform.operatingSystem}-${Platform.operatingSystemVersion}';
@@ -96,149 +106,6 @@ class HwidService {
     final bytes = utf8.encode(identifier);
     final digest = sha256.convert(bytes);
     return digest.toString();
-  }
-
-  Future<String> _getAndroidHwid() async {
-    final androidInfo = await _deviceInfoPlugin.androidInfo;
-    // Use multiple Android identifiers for better uniqueness
-    final identifiers = [
-      androidInfo.id,
-      androidInfo.model,
-      androidInfo.manufacturer,
-      androidInfo.brand,
-    ];
-    return 'android-${identifiers.where((id) => id.isNotEmpty).join('-')}';
-  }
-
-  Future<String> _getIOSHwid() async {
-    final iosInfo = await _deviceInfoPlugin.iosInfo;
-    // Use iOS identifierForVendor which is unique per app installation
-    return 'ios-${iosInfo.identifierForVendor ?? iosInfo.model}';
-  }
-
-  Future<String> _getWindowsHwid() async {
-    // Try to get Windows MachineGuid first (machine-uid approach)
-    try {
-      final result = await Process.run(
-        'reg',
-        ['query', 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography', '/v', 'MachineGuid'],
-        runInShell: true,
-      );
-      
-      if (result.exitCode == 0) {
-        final output = result.stdout.toString();
-        final lines = output.split('\n');
-        for (final line in lines) {
-          if (line.contains('MachineGuid')) {
-            final parts = line.trim().split(RegExp(r'\s+'));
-            if (parts.length >= 3) {
-              final guid = parts.last.trim();
-              if (guid.isNotEmpty && guid != 'MachineGuid') {
-                return 'windows-$guid';
-              }
-            }
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('Failed to get Windows MachineGuid: $e');
-    }
-
-    // Fallback to device info
-    try {
-      final windowsInfo = await _deviceInfoPlugin.windowsInfo;
-      final identifiers = [
-        windowsInfo.computerName,
-        windowsInfo.buildNumber.toString(),
-        windowsInfo.majorVersion.toString(),
-        windowsInfo.minorVersion.toString(),
-      ];
-      return 'windows-${identifiers.where((id) => id.isNotEmpty).join('-')}';
-    } catch (e) {
-      debugPrint('Failed to get Windows device info: $e');
-      return 'windows-${Platform.operatingSystemVersion}';
-    }
-  }
-
-  Future<String> _getMacOSHwid() async {
-    // Try to get macOS IOPlatformUUID first (machine-uid approach)
-    try {
-      var result = await Process.run('system_profiler', ['SPHardwareDataType']);
-      if (result.exitCode == 0) {
-        final output = result.stdout.toString();
-        final uuidMatch = RegExp(r'Hardware UUID:\s*(.+)').firstMatch(output);
-        if (uuidMatch != null) {
-          final uuid = uuidMatch.group(1)?.trim();
-          if (uuid != null && uuid.isNotEmpty) {
-            return 'macos-$uuid';
-          }
-        }
-      }
-
-      // Try alternative method with ioreg
-      result = await Process.run('ioreg', ['-d2', '-c', 'IOPlatformExpertDevice']);
-      if (result.exitCode == 0) {
-        final output = result.stdout.toString();
-        final uuidMatch = RegExp(r'"IOPlatformUUID"\s*=\s*"([^"]+)"').firstMatch(output);
-        if (uuidMatch != null) {
-          final uuid = uuidMatch.group(1)?.trim();
-          if (uuid != null && uuid.isNotEmpty) {
-            return 'macos-$uuid';
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('Failed to get macOS IOPlatformUUID: $e');
-    }
-
-    // Fallback to device info
-    try {
-      final macOSInfo = await _deviceInfoPlugin.macOSInfo;
-      final identifiers = [
-        macOSInfo.computerName,
-        macOSInfo.hostName,
-        macOSInfo.majorVersion.toString(),
-        macOSInfo.minorVersion.toString(),
-      ];
-      return 'macos-${identifiers.where((id) => id.isNotEmpty).join('-')}';
-    } catch (e) {
-      debugPrint('Failed to get macOS device info: $e');
-      return 'macos-${Platform.operatingSystemVersion}';
-    }
-  }
-
-  Future<String> _getLinuxHwid() async {
-    // Try to read Linux machine-id (machine-uid approach)
-    final machineIdPaths = ['/etc/machine-id', '/var/lib/dbus/machine-id'];
-    
-    for (final path in machineIdPaths) {
-      try {
-        final file = File(path);
-        if (await file.exists()) {
-          final machineId = await file.readAsString();
-          final cleanId = machineId.trim();
-          if (cleanId.isNotEmpty) {
-            return 'linux-$cleanId';
-          }
-        }
-      } catch (e) {
-        debugPrint('Failed to read $path: $e');
-      }
-    }
-
-    // Fallback to device info
-    try {
-      final linuxInfo = await _deviceInfoPlugin.linuxInfo;
-      final identifiers = [
-        linuxInfo.machineId ?? '',
-        linuxInfo.name,
-        linuxInfo.version ?? '',
-      ];
-      return 'linux-${identifiers.where((id) => id.isNotEmpty).join('-')}';
-    } catch (e) {
-      debugPrint('Failed to get Linux device info: $e');
-      return 'linux-${Platform.operatingSystemVersion}';
-    }
   }
 
   String _getDeviceOS() {
@@ -265,11 +132,12 @@ class HwidService {
         final macOSInfo = await _deviceInfoPlugin.macOSInfo;
         return '${macOSInfo.majorVersion}.${macOSInfo.minorVersion}';
       } else if (Platform.isLinux) {
-        final linuxInfo = await _deviceInfoPlugin.linuxInfo;
-        return linuxInfo.version ?? Platform.operatingSystemVersion;
+        // For Linux, just use Platform version as fallback since linuxInfo.version can be problematic
+        return Platform.operatingSystemVersion;
       }
     } catch (e) {
       // Fallback if device info fails - this is expected and not an error
+      debugPrint('Failed to get OS version: $e');
     }
     return Platform.operatingSystemVersion;
   }
@@ -278,31 +146,16 @@ class HwidService {
     try {
       if (Platform.isAndroid) {
         final androidInfo = await _deviceInfoPlugin.androidInfo;
-        return '${androidInfo.manufacturer} ${androidInfo.model}';
+        return androidInfo.model;
       } else if (Platform.isIOS) {
         final iosInfo = await _deviceInfoPlugin.iosInfo;
         return iosInfo.model;
       } else if (Platform.isWindows) {
-        final windowsInfo = await _deviceInfoPlugin.windowsInfo;
-        final computerName = windowsInfo.computerName;
-        if (computerName.isNotEmpty) {
-          return 'Windows PC ($computerName)';
-        }
-        return 'Windows PC';
+        return 'Windows Device';
       } else if (Platform.isMacOS) {
-        final macOSInfo = await _deviceInfoPlugin.macOSInfo;
-        final model = macOSInfo.model;
-        if (model.isNotEmpty) {
-          return model;
-        }
-        return 'Mac';
+        return 'Mac Device';
       } else if (Platform.isLinux) {
-        final linuxInfo = await _deviceInfoPlugin.linuxInfo;
-        final name = linuxInfo.name;
-        if (name.isNotEmpty) {
-          return 'Linux ($name)';
-        }
-        return 'Linux PC';
+        return 'Linux Device';
       }
     } catch (e) {
       // Fallback if device info fails - this is expected and not an error

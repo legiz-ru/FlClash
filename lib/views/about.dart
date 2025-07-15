@@ -134,7 +134,7 @@ class AboutView extends StatelessWidget {
                       icon: const Icon(Icons.copy),
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: deviceInfo.hwid));
-                        context.showNotifier("Hardware ID copied to clipboard");
+                        context.showNotifier("Copied to clipboard");
                       },
                     ),
                   ),
@@ -159,15 +159,7 @@ class AboutView extends StatelessWidget {
             } else if (snapshot.hasError) {
               return ListItem(
                 title: const Text("Device Information"),
-                subtitle: Text("Error loading device info: ${snapshot.error}"),
-                trailing: IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: () {
-                    // Clear cache and rebuild
-                    hwidService.clearCache();
-                    // Trigger rebuild by calling setState in parent if available
-                  },
-                ),
+                subtitle: Text("Error: ${snapshot.error}"),
               );
             } else {
               return const ListItem(
@@ -178,6 +170,8 @@ class AboutView extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
     );
   }
 
