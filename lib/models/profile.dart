@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:fl_clash/clash/core.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -168,13 +169,30 @@ extension ProfileExtension on Profile {
   }
 
   Future<Profile> update() async {
-    final response = await request.getFileResponseForUrl(url);
-    final disposition = response.headers.value("content-disposition");
-    final userinfo = response.headers.value('subscription-userinfo');
-    return await copyWith(
-      label: label ?? utils.getFileNameForDisposition(disposition) ?? id,
-      subscriptionInfo: SubscriptionInfo.formHString(userinfo),
-    ).saveFile(response.data);
+    try {
+      final response = await request.getFileResponseForUrl(url);
+      final disposition = response.headers.value("content-disposition");
+      final userinfo = response.headers.value('subscription-userinfo');
+      return await copyWith(
+        label: label ?? utils.getFileNameForDisposition(disposition) ?? id,
+        subscriptionInfo: SubscriptionInfo.formHString(userinfo),
+      ).saveFile(response.data);
+    } catch (e) {
+      // Handle DioException for HWID-related errors
+      if (e is DioException) {
+        if (e.response?.statusCode == 404) {
+          final announceHeader = e.response?.headers.value('announce');
+          if (announceHeader != null && announceHeader.isNotEmpty) {
+            // This is likely a device limit error from Remnawave panel
+            throw 'Device limit error: $announceHeader';
+          }
+        }
+        // Re-throw other DioExceptions with original message
+        throw e.message ?? 'Network error occurred';
+      }
+      // Re-throw non-DioException errors
+      rethrow;
+    }
   }
 
   Future<Profile> saveFile(Uint8List bytes) async {

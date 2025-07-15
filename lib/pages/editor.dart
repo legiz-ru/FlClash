@@ -146,7 +146,7 @@ class _EditorPageState extends ConsumerState<EditorPage> {
     if (url == null) {
       return;
     }
-    final res = await request.getTextResponseForUrl(url);
+    final res = await request.getTextResponseForUrl(url, isSubscription: false);
     _controller.text = res.data;
   }
 

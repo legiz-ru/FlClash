@@ -8,6 +8,7 @@ import 'package:dio/io.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/state.dart';
+import 'package:fl_clash/services/hwid_service.dart';
 import 'package:flutter/cupertino.dart';
 
 class Request {
@@ -34,21 +35,47 @@ class Request {
     });
   }
 
-  Future<Response> getFileResponseForUrl(String url) async {
+  Future<Response> getFileResponseForUrl(String url, {bool isSubscription = true}) async {
+    // Add HWID headers for subscription requests
+    final headers = <String, String>{};
+    if (isSubscription) {
+      try {
+        final deviceInfo = await hwidService.getDeviceInfo();
+        headers.addAll(deviceInfo.headers);
+      } catch (e) {
+        // If HWID generation fails, continue without HWID headers
+        debugPrint('Failed to get device info for HWID headers: $e');
+      }
+    }
+
     final response = await _clashDio.get(
       url,
       options: Options(
         responseType: ResponseType.bytes,
+        headers: headers.isNotEmpty ? headers : null,
       ),
     );
     return response;
   }
 
-  Future<Response> getTextResponseForUrl(String url) async {
+  Future<Response> getTextResponseForUrl(String url, {bool isSubscription = true}) async {
+    // Add HWID headers for subscription requests
+    final headers = <String, String>{};
+    if (isSubscription) {
+      try {
+        final deviceInfo = await hwidService.getDeviceInfo();
+        headers.addAll(deviceInfo.headers);
+      } catch (e) {
+        // If HWID generation fails, continue without HWID headers
+        debugPrint('Failed to get device info for HWID headers: $e');
+      }
+    }
+
     final response = await _clashDio.get(
       url,
       options: Options(
         responseType: ResponseType.plain,
+        headers: headers.isNotEmpty ? headers : null,
       ),
     );
     return response;
