@@ -68,40 +68,32 @@ class HwidService {
     try {
       if (Platform.isAndroid) {
         final androidInfo = await _deviceInfoPlugin.androidInfo;
-        // Use device fingerprint components as unique identifier
-        final deviceId = androidInfo.fingerprint ?? androidInfo.id ?? 'unknown';
-        identifier = '$deviceId-${androidInfo.model}-${androidInfo.manufacturer}';
+        // Use basic device identification that's guaranteed to exist
+        identifier = '${androidInfo.model}-${androidInfo.manufacturer}-${androidInfo.brand}';
       } else if (Platform.isIOS) {
         final iosInfo = await _deviceInfoPlugin.iosInfo;
-        // Use identifierForVendor as unique identifier, fallback to system name
+        // Use identifierForVendor as unique identifier
         final vendorId = iosInfo.identifierForVendor ?? 'unknown-vendor';
-        final systemName = iosInfo.systemName ?? 'iOS';
-        identifier = '$vendorId-$systemName-${iosInfo.systemVersion}';
+        identifier = '$vendorId-${iosInfo.model}';
       } else if (Platform.isWindows) {
         final windowsInfo = await _deviceInfoPlugin.windowsInfo;
-        // Use computer name and product ID
-        final computerName = windowsInfo.computerName ?? 'UnknownComputer';
-        final productId = windowsInfo.productId ?? 'UnknownProduct';
-        identifier = '$computerName-$productId';
+        // Use basic Windows identification
+        identifier = '${windowsInfo.majorVersion}-${windowsInfo.minorVersion}-${windowsInfo.buildNumber}';
       } else if (Platform.isMacOS) {
         final macOSInfo = await _deviceInfoPlugin.macOSInfo;
-        // Use system GUID and computer name
-        final systemGUID = macOSInfo.systemGUID ?? 'UnknownGUID';
-        final computerName = macOSInfo.computerName ?? 'UnknownMac';
-        identifier = '$systemGUID-$computerName';
+        // Use basic macOS identification
+        identifier = '${macOSInfo.hostName}-${macOSInfo.majorVersion}-${macOSInfo.minorVersion}';
       } else if (Platform.isLinux) {
         final linuxInfo = await _deviceInfoPlugin.linuxInfo;
-        // Use machine ID
-        final machineId = linuxInfo.machineId ?? 'UnknownMachine';
-        final id = linuxInfo.id ?? 'linux';
-        identifier = '$machineId-$id';
+        // Use basic Linux identification
+        identifier = '${linuxInfo.name}-${linuxInfo.version ?? 'unknown'}';
       } else {
         // Fallback for other platforms
         identifier = Platform.operatingSystem + Platform.operatingSystemVersion;
       }
     } catch (e) {
       // Fallback if device info fails
-      identifier = Platform.operatingSystem + Platform.operatingSystemVersion + DateTime.now().millisecondsSinceEpoch.toString();
+      identifier = '${Platform.operatingSystem}-${Platform.operatingSystemVersion}-${DateTime.now().millisecondsSinceEpoch}';
     }
 
     // Hash the identifier for privacy and consistency
@@ -129,16 +121,10 @@ class HwidService {
         return iosInfo.systemVersion;
       } else if (Platform.isWindows) {
         final windowsInfo = await _deviceInfoPlugin.windowsInfo;
-        final major = windowsInfo.majorVersion;
-        final minor = windowsInfo.minorVersion;
-        final build = windowsInfo.buildNumber;
-        return '$major.$minor.$build';
+        return '${windowsInfo.majorVersion}.${windowsInfo.minorVersion}.${windowsInfo.buildNumber}';
       } else if (Platform.isMacOS) {
         final macOSInfo = await _deviceInfoPlugin.macOSInfo;
-        final major = macOSInfo.majorVersion;
-        final minor = macOSInfo.minorVersion;
-        final patch = macOSInfo.patchVersion;
-        return '$major.$minor.$patch';
+        return '${macOSInfo.majorVersion}.${macOSInfo.minorVersion}.${macOSInfo.patchVersion}';
       } else if (Platform.isLinux) {
         final linuxInfo = await _deviceInfoPlugin.linuxInfo;
         return linuxInfo.version ?? Platform.operatingSystemVersion;
@@ -156,16 +142,16 @@ class HwidService {
         return '${androidInfo.manufacturer} ${androidInfo.model}';
       } else if (Platform.isIOS) {
         final iosInfo = await _deviceInfoPlugin.iosInfo;
-        return iosInfo.localizedModel ?? 'iOS Device';
+        return iosInfo.model ?? 'iOS Device';
       } else if (Platform.isWindows) {
         final windowsInfo = await _deviceInfoPlugin.windowsInfo;
-        return windowsInfo.productName ?? 'Windows Device';
+        return 'Windows ${windowsInfo.majorVersion}.${windowsInfo.minorVersion}';
       } else if (Platform.isMacOS) {
         final macOSInfo = await _deviceInfoPlugin.macOSInfo;
-        return macOSInfo.model ?? 'Mac Device';
+        return macOSInfo.hostName ?? 'Mac Device';
       } else if (Platform.isLinux) {
         final linuxInfo = await _deviceInfoPlugin.linuxInfo;
-        return linuxInfo.prettyName ?? 'Linux Device';
+        return linuxInfo.name ?? 'Linux Device';
       }
     } catch (e) {
       // Fallback if device info fails
